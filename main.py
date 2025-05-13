@@ -108,7 +108,7 @@ if __name__ == "__main__":
     E1, E2, E3 = 110, 70, 200                   # Módulo E [GPa] (alma Ti-6Al-4V, aba Al 7075-T6 e revestimento fibra de carbono)
     E0 = E1                                     # VERIFICAR SE ISSO É OK
     t1, t2, t3 = 20/1000, 20/1000, 20/1000      # Espessuras de cada material [m]
-    h1 = 0.1                                    # Altura da alma [m]
+    h1 = 0.3                                    # Altura da alma [m]
     l = 0.3                                     # Largura total da caixa de asa [m]
     b = 0.8*l/(N_cel + 1)                       # Largura da aba [m] | A soma das abas é 80% da largura total
     e = (l - (N_cel+1)*b)/(N_cel + 2)           # Espaçamento entre as células
