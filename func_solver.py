@@ -387,10 +387,10 @@ def MatrizA_torsao(A, C, alpha, beta, N = 2):
     '''
     MA = np.zeros((N, N))
     AMI = A*np.ones(N)
-    MA[0, :] = AMI 
+    MA[0, :] = 2*AMI 
 
     if (N == 1):
-        MA = alpha 
+        MA = 2*A 
 
     elif (N==2):
         MA[1, 0] = C*(alpha + beta)
@@ -417,8 +417,10 @@ def MatrizA_torsao(A, C, alpha, beta, N = 2):
     # for i in range(1, N):
     return MA
 
-def momento_torsor_dist(Fz, Fy, zcp, ycp):
-    return Fz*ycp - Fy*zcp 
+def momento_torsor_dist(Fz, Fy, zcp, ycp, Ma):
+    Ma_dist = Ma*np.ones(len(Fz))
+    return Ma_dist
+    # return Fz*ycp - Fy*zcp 
 
 def torque_torsor(x, mx):
     T = np.zeros(len(x))
@@ -426,19 +428,23 @@ def torque_torsor(x, mx):
         T[i-1] = T[i] + mx[i]*(x[i] - x[i-1])
     return T
 
-def problema_torcao(x, MA, Tx, alphai, betai):
-    N_cel = np.int64(MA.size/2)
+def problema_torcao(x, Tx, Ci, alphai, betai, N_cel, G0, Ami):
     q = np.zeros((N_cel, len(x)))
     d_dtheta = np.zeros(len(x))
     theta = np.zeros(len(x))
+    T = np.zeros(N_cel).T 
+    MA = MatrizA_torsao(Ami, Ci, betai, alphai, N_cel)
 
     for i in range(len(x)):
-        T = np.zeros(N_cel).T 
-        T[0] = Tx[i]
-        q[:, i] = np.matmul(np.linalg.inv(MA), T) 
-        d_dtheta[i] = q[0, i]*alphai - q[1, i]*betai
+        if N_cel == 1:
+            q[0, i] = Tx[i]/(2*Ami) 
+            d_dtheta[i] = Tx[i]*alphai/(4*Ami**2 * G0)
+        else: 
+            T[0] = Tx[i]
+            q[:, i] = np.matmul(np.linalg.inv(MA), T)
+            d_dtheta[i] = q[0, i]*Ci*alphai - q[1, i]*betai*Ci
 
     for i in range(1, len(x)):
-        theta[i] = theta[i-1] + d_dtheta[i]*(x[i] - x[i-1])
+        theta[i] = theta[i-1] + d_dtheta[i-1]*(x[i] - x[i-1])
 
     return theta, q  

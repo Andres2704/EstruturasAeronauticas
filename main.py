@@ -25,7 +25,7 @@ if __name__ == "__main__":
     Cl_PLAA = 2*L_max/(rho*Vd**2 * S)       # Cl no ponto PLAA
     Cl_NHAA = -0.450                        # Cl no ponto NHAA
     Cl_NLAA = 2*L_min/(rho*Vd**2 * S)       # Cl no ponto NLAA
-    B = 35.23                                # Envergadura + cabine [m]
+    B = 8.23                                # Envergadura + cabine [m]
     C = 1.11                                # Envergadura da Cabine [m]
     b = B - C                               # Envergadura da asa sem a cabine (para visualização da semi-asa) [m]
     lamb = 0.875
@@ -44,9 +44,9 @@ if __name__ == "__main__":
     print('Sustentação PLAA = ', L_max, 'N')
     print('Sustentação NHAA = ', L_min, 'N')
     print('Sustentação NLAA = ', L_min, 'N')
-
-    [x, w_sust_pos] = lift_Schrenk(L_max, b, lamb, n = 100)
-    [x, w_sust_neg] = lift_Schrenk(L_min, b, lamb, n = 100)
+    NPontos = 500
+    [x, w_sust_pos] = lift_Schrenk(L_max, b, lamb, n = NPontos)
+    [x, w_sust_neg] = lift_Schrenk(L_min, b, lamb, n = NPontos)
 
 
     # ===================================== CÁLCULO DO ARRASTO ===========================================
@@ -106,10 +106,10 @@ if __name__ == "__main__":
 
     # ========================= PROPRIEDADES DE ÁREA PARA VIGA T DE N CELULAS ===========================
     N_cel = 2                                   # Número de células
-    E1, E2, E3 = 110, 70, 200                   # Módulo E [GPa] (alma Ti-6Al-4V, aba Al 7075-T6 e revestimento fibra de carbono)
-    G1, G2, G3 = 43, 26.9, 35.7                 # Módulo G [GPa] (alma Ti-6Al-4V, aba Al 7075-T6 e revestimento fibra de carbono)
+    E1, E2, E3 = 70*1e9, 70*1e9, 70*1e9                     # Módulo E [GPa] (alma Ti-6Al-4V, aba Al 7075-T6 e revestimento fibra de carbono)
+    G1, G2, G3 = 26.9*1e9, 26.9*1e9, 26.9*1e9                 # Módulo G [GPa] (alma Ti-6Al-4V, aba Al 7075-T6 e revestimento fibra de carbono)
     G0, E0 = G1, E1                             # VERIFICAR SE ISSO É OK
-    t1, t2, t3 = 20/1000, 20/1000, 20/1000      # Espessuras de cada material [m]
+    t1, t2, t3 = 2/1000, 2/1000, 2/1000      # Espessuras de cada material [m]
     h1 = 0.3                                    # Altura da alma [m]
     l = 0.3                                     # Largura total da caixa de asa [m]
     b = 0.8*l/(N_cel + 1)                       # Largura da aba [m] | A soma das abas é 80% da largura total
@@ -146,14 +146,14 @@ if __name__ == "__main__":
     # plot_momento_fletor(x, Mz_PHAA,Mz_PLAA, Mz_NHAA, Mz_NLAA, My_PHAA, My_PLAA, My_NHAA, My_NLAA)
 
     # ======================================== DEFLEXÕES ==========================================
-    v_def_NHAA = integrate_deflection(x, Mz_NHAA/(E0*1e9*Izz_s)) # 1e9 para transformar de GPa para Pa
-    v_def_NLAA = integrate_deflection(x, Mz_NLAA/(E0*1e9*Izz_s))
-    v_def_PHAA = integrate_deflection(x, Mz_PHAA/(E0*1e9*Izz_s))
-    v_def_PLAA = integrate_deflection(x, Mz_PLAA/(E0*1e9*Izz_s))
-    w_def_NHAA = integrate_deflection(x, -My_NHAA/(E0*1e9*Iyy_s))
-    w_def_NLAA = integrate_deflection(x, -My_NLAA/(E0*1e9*Iyy_s))
-    w_def_PHAA = integrate_deflection(x, -My_PHAA/(E0*1e9*Iyy_s))
-    w_def_PLAA = integrate_deflection(x, -My_PLAA/(E0*1e9*Iyy_s))
+    v_def_NHAA = integrate_deflection(x, Mz_NHAA/(E0*Izz_s)) 
+    v_def_NLAA = integrate_deflection(x, Mz_NLAA/(E0*Izz_s))
+    v_def_PHAA = integrate_deflection(x, Mz_PHAA/(E0*Izz_s))
+    v_def_PLAA = integrate_deflection(x, Mz_PLAA/(E0*Izz_s))
+    w_def_NHAA = integrate_deflection(x, -My_NHAA/(E0*Iyy_s))
+    w_def_NLAA = integrate_deflection(x, -My_NLAA/(E0*Iyy_s))
+    w_def_PHAA = integrate_deflection(x, -My_PHAA/(E0*Iyy_s))
+    w_def_PLAA = integrate_deflection(x, -My_PLAA/(E0*Iyy_s))
 
     plot_deflexao(x, v_def_PHAA, v_def_PLAA, v_def_NHAA, v_def_NLAA, w_def_PHAA, w_def_PLAA, w_def_NHAA, w_def_NLAA)
     # =============================================== EIXO NEUTRO =========================================================
@@ -199,8 +199,7 @@ if __name__ == "__main__":
     Ami = (b+e)*(h1 + t2)
     Ci = 1 / (2*Ami*G0)
     betai = (G0/G1)*(h1/t1) + (G0/G2)*(t2/t1)
-    alphai = 2*betai + 2*(G0/(G2*t2))*(e + b) 
-    MA = MatrizA_torsao(Ami, Ci, betai, alphai, N_cel)
+    alphai = 2*betai + 2*(G0/(G2*t2))*(e + b)
     
     # Posição do CP para cada ponto de estudo 
     zcp = 0.0253*1.6 
@@ -208,11 +207,15 @@ if __name__ == "__main__":
     ycp_PLAA = ycp(Cl_PLAA)
     ycp_NHAA = ycp(Cl_NHAA)
     ycp_NLAA = ycp(Cl_NLAA)
+    Cm_PHAA = -0.428
+    Cm_PLAA = -0.230
+    Cm_NHAA = 0.043
+    Cm_NLAA = 0.043
 
-    mx_PHAA = momento_torsor_dist(F_distrib_PHAA[1, :], F_distrib_PHAA[0, :], zcp, ycp_PHAA)
-    mx_PLAA = momento_torsor_dist(F_distrib_PLAA[1, :], F_distrib_PLAA[0, :], zcp, ycp_PLAA)
-    mx_NHAA = momento_torsor_dist(F_distrib_NHAA[1, :], F_distrib_NHAA[0, :], zcp, ycp_NHAA)
-    mx_NLAA = momento_torsor_dist(F_distrib_NLAA[1, :], F_distrib_NLAA[0, :], zcp, ycp_NLAA)
+    mx_PHAA = momento_torsor_dist(F_distrib_PHAA[1, :], F_distrib_PHAA[0, :], zcp, ycp_PHAA, 0.5*rho*V_PHAA**2*1.6*Cm_PHAA)
+    mx_PLAA = momento_torsor_dist(F_distrib_PLAA[1, :], F_distrib_PLAA[0, :], zcp, ycp_PLAA, 0.5*rho*Vd**2*1.6*Cm_PLAA)
+    mx_NHAA = momento_torsor_dist(F_distrib_NHAA[1, :], F_distrib_NHAA[0, :], zcp, ycp_NHAA, 0.5*rho*V_NHAA**2*1.6*Cm_NHAA)
+    mx_NLAA = momento_torsor_dist(F_distrib_NLAA[1, :], F_distrib_NLAA[0, :], zcp, ycp_NLAA, 0.5*rho*Vd**2*1.6*Cm_NLAA)
     
     Tx_PHAA = torque_torsor(x, -mx_PHAA)
     Tx_PLAA = torque_torsor(x, -mx_PLAA)
@@ -220,10 +223,10 @@ if __name__ == "__main__":
     Tx_NLAA = torque_torsor(x, -mx_NLAA)
     plot_torcao(x, mx_PHAA, mx_PLAA, mx_NHAA, mx_NLAA, Tx_PHAA, Tx_PLAA, Tx_NHAA, Tx_NLAA)
 
-    theta_x_PHAA, q_x_PHAA = problema_torcao(x, MA, Tx_PHAA, alphai, betai)
-    theta_x_PLAA, q_x_PLAA = problema_torcao(x, MA, Tx_PLAA, alphai, betai)
-    theta_x_NHAA, q_x_NHAA = problema_torcao(x, MA, Tx_NHAA, alphai, betai)
-    theta_x_NLAA, q_x_NLAA = problema_torcao(x, MA, Tx_NLAA, alphai, betai)
+    theta_x_PHAA, q_x_PHAA = problema_torcao(x, Tx_PHAA, Ci, alphai, betai, N_cel, G0, Ami)
+    theta_x_PLAA, q_x_PLAA = problema_torcao(x, Tx_PLAA, Ci, alphai, betai, N_cel, G0, Ami)
+    theta_x_NHAA, q_x_NHAA = problema_torcao(x, Tx_NHAA, Ci, alphai, betai, N_cel, G0, Ami)
+    theta_x_NLAA, q_x_NLAA = problema_torcao(x, Tx_NLAA, Ci, alphai, betai, N_cel, G0, Ami)
     plot_angulo_torcao(x, theta_x_PHAA, theta_x_PLAA, theta_x_NHAA, theta_x_NLAA)
-
+    print(q_x_PHAA[0, 0])
     plt.show()
