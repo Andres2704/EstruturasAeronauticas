@@ -1,5 +1,6 @@
 from func_solver import * 
- 
+from fun_plot import *
+
 if __name__ == "__main__":
     # ================ Dados de entrada ===============
     Vd = 259.3/3.6 # Velocidade de cruzeiro nunca ultrapassada
@@ -24,7 +25,7 @@ if __name__ == "__main__":
     Cl_PLAA = 2*L_max/(rho*Vd**2 * S)       # Cl no ponto PLAA
     Cl_NHAA = -0.450                        # Cl no ponto NHAA
     Cl_NLAA = 2*L_min/(rho*Vd**2 * S)       # Cl no ponto NLAA
-    B = 8.23                                # Envergadura + cabine [m]
+    B = 35.23                                # Envergadura + cabine [m]
     C = 1.11                                # Envergadura da Cabine [m]
     b = B - C                               # Envergadura da asa sem a cabine (para visualização da semi-asa) [m]
     lamb = 0.875
@@ -70,10 +71,10 @@ if __name__ == "__main__":
     F_distrib_NHAA = np.vstack((w_arrasto_NHAA, w_sust_neg))
     F_distrib_NLAA = np.vstack((w_arrasto_NLAA, w_sust_neg))
 
-    plot_3d_forces(x, F_distrib_PHAA, L_max, arrasto_total_PHAA, title="Distribuição de Forças Aerodinâmicas PHAA")
-    plot_3d_forces(x, F_distrib_PLAA, L_max, arrasto_total_PLAA, title="Distribuição de Forças Aerodinâmicas PLAA")
-    plot_3d_forces(x, F_distrib_NHAA, L_min, arrasto_total_NHAA, title="Distribuição de Forças Aerodinâmicas NHAA")
-    plot_3d_forces(x, F_distrib_NLAA, L_min, arrasto_total_NLAA, title="Distribuição de Forças Aerodinâmicas NLAA")
+    # plot_3d_forces(x, F_distrib_PHAA, L_max, arrasto_total_PHAA, title="Distribuição de Forças Aerodinâmicas PHAA")
+    # plot_3d_forces(x, F_distrib_PLAA, L_max, arrasto_total_PLAA, title="Distribuição de Forças Aerodinâmicas PLAA")
+    # plot_3d_forces(x, F_distrib_NHAA, L_min, arrasto_total_NHAA, title="Distribuição de Forças Aerodinâmicas NHAA")
+    # plot_3d_forces(x, F_distrib_NLAA, L_min, arrasto_total_NLAA, title="Distribuição de Forças Aerodinâmicas NLAA")
 
     print('======================= ARRASTO ===================')
     print('Cd_PHAA = ', Cd_PHAA)
@@ -106,14 +107,15 @@ if __name__ == "__main__":
     # ========================= PROPRIEDADES DE ÁREA PARA VIGA T DE N CELULAS ===========================
     N_cel = 2                                   # Número de células
     E1, E2, E3 = 110, 70, 200                   # Módulo E [GPa] (alma Ti-6Al-4V, aba Al 7075-T6 e revestimento fibra de carbono)
-    E0 = E1                                     # VERIFICAR SE ISSO É OK
+    G1, G2, G3 = 43, 26.9, 35.7                 # Módulo G [GPa] (alma Ti-6Al-4V, aba Al 7075-T6 e revestimento fibra de carbono)
+    G0, E0 = G1, E1                             # VERIFICAR SE ISSO É OK
     t1, t2, t3 = 20/1000, 20/1000, 20/1000      # Espessuras de cada material [m]
     h1 = 0.3                                    # Altura da alma [m]
     l = 0.3                                     # Largura total da caixa de asa [m]
     b = 0.8*l/(N_cel + 1)                       # Largura da aba [m] | A soma das abas é 80% da largura total
     e = (l - (N_cel+1)*b)/(N_cel + 2)           # Espaçamento entre as células
     [As, zs, ys, Izz_s, Iyy_s] = calc_area_prop(N_cel, [E1, E2, E3], [t1, t2, t3], h1, b, e)
-    desenhar_vigas_T(N_cel+1, t1, t2, t3, b, h1, e, ponto_centroide=(ys, zs), alpha=None) 
+    # desenhar_vigas_T(N_cel+1, t1, t2, t3, b, h1, e, ponto_centroide=(ys, zs), alpha=None) 
 
     print('======================= PROPRIEDADES DE ÁREA ===================')
     print('Area Ponderada = ', As, 'm²')
@@ -130,27 +132,7 @@ if __name__ == "__main__":
     Vz_PHAA = shear_force(x, -F_PHAA[1, :])
     Vz_NLAA = shear_force(x, -F_NLAA[1, :])
     Vz_NHAA = shear_force(x, -F_NHAA[1, :])
-
-    plt.figure(dpi = 100, figsize = (13,4))
-    plt.subplot(1,2,1)
-    plt.plot(x, Vz_PHAA/1000, color = 'r', label = 'PHAA')
-    plt.plot(x, Vz_PLAA/1000, color = 'b', label = 'PLAA')
-    plt.plot(x, Vz_NHAA/1000, color = 'k', label = 'NHAA')
-    plt.plot(x, Vz_NLAA/1000, color = 'g', label = 'NLAA')
-    plt.legend()
-    plt.grid()
-    plt.ylabel(r'$V_z$ (x) [kN]')
-    plt.xlabel('x[m]')
-
-    plt.subplot(1,2,2)
-    plt.plot(x, Vy_PHAA/1000, color = 'r', label = 'PHAA')
-    plt.plot(x, Vy_PLAA/1000, color = 'b', label = 'PLAA')
-    plt.plot(x, Vy_NHAA/1000, color = 'k', label = 'NHAA')
-    plt.plot(x, Vy_NLAA/1000, color = 'g', label = 'NLAA')
-    plt.legend()
-    plt.grid()
-    plt.ylabel(r'$V_y$ (x) [kN]')
-    plt.xlabel('x[m]')
+    # plot_esforco_cortante(x, Vz_PHAA, Vz_PLAA, Vz_NHAA, Vz_NLAA, Vy_PHAA, Vy_PLAA, Vy_NHAA, Vy_NLAA)
 
     # ====================================== MOMENTO FLETOR ============================================
     My_PLAA = shear_force(x, -Vy_PLAA)
@@ -161,62 +143,19 @@ if __name__ == "__main__":
     Mz_PHAA = shear_force(x, Vz_PHAA)
     Mz_NLAA = shear_force(x, Vz_NLAA)
     Mz_NHAA = shear_force(x, Vz_NHAA)
-
-    plt.figure(dpi = 100, figsize = (13,4))
-    plt.subplot(1,2,1)
-    plt.plot(x, Mz_PHAA/1000, color = 'r', label = 'PHAA')
-    plt.plot(x, Mz_PLAA/1000, color = 'b', label = 'PLAA')
-    plt.plot(x, Mz_NHAA/1000, color = 'k', label = 'NHAA')
-    plt.plot(x, Mz_NLAA/1000, color = 'g', label = 'NLAA')
-    plt.legend()
-    plt.grid()
-    plt.ylabel(r'$M_z$ (x) [kN.m]')
-    plt.xlabel('x[m]')
-
-    plt.subplot(1,2,2)
-    plt.plot(x, My_PHAA/1000, color = 'r', label = 'PHAA')
-    plt.plot(x, My_PLAA/1000, color = 'b', label = 'PLAA')
-    plt.plot(x, My_NHAA/1000, color = 'k', label = 'NHAA')
-    plt.plot(x, My_NLAA/1000, color = 'g', label = 'NLAA')
-    plt.legend()
-    plt.grid()
-    plt.ylabel(r'$M_y$ (x) [kN.m]')
-    plt.xlabel('x[m]')
-    
-
+    # plot_momento_fletor(x, Mz_PHAA,Mz_PLAA, Mz_NHAA, Mz_NLAA, My_PHAA, My_PLAA, My_NHAA, My_NLAA)
 
     # ======================================== DEFLEXÕES ==========================================
     v_def_NHAA = integrate_deflection(x, Mz_NHAA/(E0*1e9*Izz_s)) # 1e9 para transformar de GPa para Pa
     v_def_NLAA = integrate_deflection(x, Mz_NLAA/(E0*1e9*Izz_s))
     v_def_PHAA = integrate_deflection(x, Mz_PHAA/(E0*1e9*Izz_s))
     v_def_PLAA = integrate_deflection(x, Mz_PLAA/(E0*1e9*Izz_s))
-
     w_def_NHAA = integrate_deflection(x, -My_NHAA/(E0*1e9*Iyy_s))
     w_def_NLAA = integrate_deflection(x, -My_NLAA/(E0*1e9*Iyy_s))
     w_def_PHAA = integrate_deflection(x, -My_PHAA/(E0*1e9*Iyy_s))
     w_def_PLAA = integrate_deflection(x, -My_PLAA/(E0*1e9*Iyy_s))
 
-    plt.figure(dpi = 100, figsize = (13,4))
-    plt.subplot(1,2,1)
-    plt.plot(x, v_def_PHAA*1000, color = 'r', label = 'PHAA')
-    plt.plot(x, v_def_PLAA*1000, color = 'b', label = 'PLAA')
-    plt.plot(x, v_def_NHAA*1000, color = 'k', label = 'NHAA')
-    plt.plot(x, v_def_NLAA*1000, color = 'g', label = 'NLAA')
-    plt.legend()
-    plt.grid()
-    plt.ylabel(r'$v$ (x) [mm]')
-    plt.xlabel('x[m]')
-
-    plt.subplot(1,2,2)
-    plt.plot(x, w_def_PHAA*1000, color = 'r', label = 'PHAA')
-    plt.plot(x, w_def_PLAA*1000, color = 'b', label = 'PLAA')
-    plt.plot(x, w_def_NHAA*1000, color = 'k', label = 'NHAA')
-    plt.plot(x, w_def_NLAA*1000, color = 'g', label = 'NLAA')
-    plt.legend()
-    plt.grid()
-    plt.ylabel(r'$w$ (x) [mm]')
-    plt.xlabel('x[m]')
-
+    plot_deflexao(x, v_def_PHAA, v_def_PLAA, v_def_NHAA, v_def_NLAA, w_def_PHAA, w_def_PLAA, w_def_NHAA, w_def_NLAA)
     # =============================================== EIXO NEUTRO =========================================================
     alpha_eixo_PHAA = eixo_neutro(Mz_PHAA[0], My_PHAA[0], Izz_s, Iyy_s)
     alpha_eixo_PLAA = eixo_neutro(Mz_PLAA[0], My_PLAA[0], Izz_s, Iyy_s)
@@ -230,10 +169,10 @@ if __name__ == "__main__":
     print('alpha_eixo_NLAA = ', alpha_eixo_NLAA*180/np.pi, 'deg')
 
     # ================================================ CAMPO DE TENSOES EM X = 0 (RAIZ) ===================================
-    sigma_x(N_cel, h1, t1, t2, t3, e, b, E1, E2, E3, E1, My_PHAA[0], Mz_PHAA[0], Iyy_s, Izz_s, point= 'PHAA', centroide=(ys, zs), alpha=alpha_eixo_PHAA)
-    sigma_x(N_cel, h1, t1, t2, t3, e, b, E1, E2, E3, E1, My_PLAA[0], Mz_PLAA[0], Iyy_s, Izz_s, point= 'PLAA', centroide=(ys, zs), alpha=alpha_eixo_PLAA)
-    sigma_x(N_cel, h1, t1, t2, t3, e, b, E1, E2, E3, E1, My_NHAA[0], Mz_NHAA[0], Iyy_s, Izz_s, point= 'NHAA', centroide=(ys, zs), alpha=alpha_eixo_NHAA)
-    sigma_x(N_cel, h1, t1, t2, t3, e, b, E1, E2, E3, E1, My_NLAA[0], Mz_NLAA[0], Iyy_s, Izz_s, point= 'NLAA', centroide=(ys, zs), alpha=alpha_eixo_NLAA)
+    # sigma_x(N_cel, h1, t1, t2, t3, e, b, E1, E2, E3, E1, My_PHAA[0], Mz_PHAA[0], Iyy_s, Izz_s, point= 'PHAA', centroide=(ys, zs), alpha=alpha_eixo_PHAA)
+    # sigma_x(N_cel, h1, t1, t2, t3, e, b, E1, E2, E3, E1, My_PLAA[0], Mz_PLAA[0], Iyy_s, Izz_s, point= 'PLAA', centroide=(ys, zs), alpha=alpha_eixo_PLAA)
+    # sigma_x(N_cel, h1, t1, t2, t3, e, b, E1, E2, E3, E1, My_NHAA[0], Mz_NHAA[0], Iyy_s, Izz_s, point= 'NHAA', centroide=(ys, zs), alpha=alpha_eixo_NHAA)
+    # sigma_x(N_cel, h1, t1, t2, t3, e, b, E1, E2, E3, E1, My_NLAA[0], Mz_NLAA[0], Iyy_s, Izz_s, point= 'NLAA', centroide=(ys, zs), alpha=alpha_eixo_NLAA)
 
 
 
@@ -250,4 +189,41 @@ if __name__ == "__main__":
     print('w_max_PLAA = ', np.max(np.abs(w_def_PLAA))*1000, 'mm')
     print('w_max_NHAA = ', np.max(np.abs(w_def_NHAA))*1000, 'mm')
     print('w_max_NLAA = ', np.max(np.abs(w_def_NLAA))*1000, 'mm')
+
+
+    # ===================================================================================================
+    # =================================== --------------------- =========================================
+    # =================================== | ANÁLISE DE TORÇÃO | =========================================
+    # =================================== --------------------- =========================================
+    # ===================================================================================================
+    Ami = (b+e)*(h1 + t2)
+    Ci = 1 / (2*Ami*G0)
+    betai = (G0/G1)*(h1/t1) + (G0/G2)*(t2/t1)
+    alphai = 2*betai + 2*(G0/(G2*t2))*(e + b) 
+    MA = MatrizA_torsao(Ami, Ci, betai, alphai, N_cel)
+    
+    # Posição do CP para cada ponto de estudo 
+    zcp = 0.0253*1.6 
+    ycp_PHAA = ycp(Cl_PHAA)
+    ycp_PLAA = ycp(Cl_PLAA)
+    ycp_NHAA = ycp(Cl_NHAA)
+    ycp_NLAA = ycp(Cl_NLAA)
+
+    mx_PHAA = momento_torsor_dist(F_distrib_PHAA[1, :], F_distrib_PHAA[0, :], zcp, ycp_PHAA)
+    mx_PLAA = momento_torsor_dist(F_distrib_PLAA[1, :], F_distrib_PLAA[0, :], zcp, ycp_PLAA)
+    mx_NHAA = momento_torsor_dist(F_distrib_NHAA[1, :], F_distrib_NHAA[0, :], zcp, ycp_NHAA)
+    mx_NLAA = momento_torsor_dist(F_distrib_NLAA[1, :], F_distrib_NLAA[0, :], zcp, ycp_NLAA)
+    
+    Tx_PHAA = torque_torsor(x, -mx_PHAA)
+    Tx_PLAA = torque_torsor(x, -mx_PLAA)
+    Tx_NHAA = torque_torsor(x, -mx_NHAA)
+    Tx_NLAA = torque_torsor(x, -mx_NLAA)
+    plot_torcao(x, mx_PHAA, mx_PLAA, mx_NHAA, mx_NLAA, Tx_PHAA, Tx_PLAA, Tx_NHAA, Tx_NLAA)
+
+    theta_x_PHAA, q_x_PHAA = problema_torcao(x, MA, Tx_PHAA, alphai, betai)
+    theta_x_PLAA, q_x_PLAA = problema_torcao(x, MA, Tx_PLAA, alphai, betai)
+    theta_x_NHAA, q_x_NHAA = problema_torcao(x, MA, Tx_NHAA, alphai, betai)
+    theta_x_NLAA, q_x_NLAA = problema_torcao(x, MA, Tx_NLAA, alphai, betai)
+    plot_angulo_torcao(x, theta_x_PHAA, theta_x_PLAA, theta_x_NHAA, theta_x_NLAA)
+
     plt.show()

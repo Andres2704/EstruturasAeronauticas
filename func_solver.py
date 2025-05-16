@@ -228,76 +228,6 @@ def transf_aero2struct(alpha, F):
     f_trans[1, :] = F[0,:]*np.sin(alpha) + F[1,:]*np.cos(alpha)
     return f_trans
 
-def plot_3d_forces(x, F_distrib, L_total, D_total, title="Distribuição de Forças Aerodinâmicas"):
-    fig = plt.figure(figsize=(12, 8))
-    ax = fig.add_subplot(111, projection='3d')
-
-    # Extrai distribuições brutas
-    w_drag = F_distrib[0,:]
-    w_lift = F_distrib[1,:]
-
-    # Área sob a curva (para normalização)
-    drag_integral = np.trapz(w_drag, x)
-    lift_integral = np.trapz(w_lift, x)
-
-    # Evita divisão por zero
-    drag_integral = drag_integral if drag_integral != 0 else 1
-    lift_integral = lift_integral if lift_integral != 0 else 1
-
-    # Escalona distribuições para total desejado
-    w_drag_scaled = w_drag * (D_total / drag_integral)
-    w_lift_scaled = w_lift * (L_total / lift_integral)
-
-    # Escalas para visualização
-    max_force = max(np.max(np.abs(w_lift_scaled)), np.max(np.abs(w_drag_scaled)))
-    scale_global = 0.3 * max(x) / max_force if max_force > 0 else 1
-
-    # Linha da asa (eixo x)
-    ax.plot(x, np.zeros_like(x), np.zeros_like(x), 'k-', linewidth=2, label='Asa')
-
-    for i in range(len(x)):
-        # Vetor de sustentação
-        ax.quiver(x[i], 0, 0,
-                  0, 0, w_lift_scaled[i] * scale_global,
-                  color='blue', alpha=0.7,
-                  label='Sustentação' if i == 0 else "",
-                  arrow_length_ratio=0.05, linewidth=1.5)
-
-        # Vetor de arrasto
-        ax.quiver(x[i], 0, 0,
-                  0, -w_drag_scaled[i] * scale_global, 0,
-                  color='red', alpha=0.7,
-                  label='Arrasto' if i == 0 else "",
-                  arrow_length_ratio=0.05, linewidth=1.5)
-
-    # Eixos e título
-    ax.set_xlabel('Envergadura [m]')
-    ax.set_ylabel('Profundidade [m] (Arrasto)')
-    ax.set_zlabel('Altura [m] (Sustentação)')
-    # ax.set_title(f"{title}\nL = {L_total:.1f} N | D = {D_total:.1f} N | L/D = {abs(L_total/D_total):.2f}")
-
-    # Limites com padding
-    padding = 0.1 * max(x)
-    ax.set_xlim([min(x)-padding, max(x)+padding])
-
-    max_drag = np.max(np.abs(w_drag_scaled)) * scale_global
-    ax.set_ylim([-max_drag-padding, padding])
-
-    max_lift = np.max(w_lift_scaled) * scale_global
-    min_lift = np.min(w_lift_scaled) * scale_global
-    ax.set_zlim([min(0, min_lift-padding), max_lift+padding])
-
-    # Ângulo de visão
-    ax.view_init(elev=25, azim=-50)
-
-    # Legendas sem duplicação
-    handles, labels = ax.get_legend_handles_labels()
-    by_label = dict(zip(labels, handles))
-    ax.legend(by_label.values(), by_label.keys(), loc='upper right')
-
-    plt.tight_layout()
-    plt.show()
-
 def det_alpha(cl0, cla, cl):
     return (cl - cl0)/cla
 
@@ -344,76 +274,6 @@ def calc_area_prop(N, E, t, h1, b, e):
 def eixo_neutro(Mz, My, Izzs, Iyys):    # Considerando que sempre I_yz = 0
     alpha_eixo = np.arctan2(Mz*Iyys, My*Izzs)
     return alpha_eixo
-
-def desenhar_vigas_T(n, t1, t2, t3, b, h1, e, ponto_centroide=None, alpha=None):
-    largura_total = n * b + (n + 1) * e
-    altura_total = 2 * t3 + 2 * t2 + h1
-
-    fig, ax = plt.subplots(figsize=(12, 6))
-
-    # Revestimentos (superior e inferior)
-    ax.add_patch(patches.Rectangle((0, altura_total - t3), largura_total, t3, color='gray'))
-    ax.add_patch(patches.Rectangle((0, 0), largura_total, t3, color='gray'))
-
-    for i in range(n):
-        x_base = e + i * (b + e)
-
-        # Aba inferior
-        ax.add_patch(patches.Rectangle((x_base, t3), b, t2, color='dodgerblue'))
-
-        # Alma
-        x_alma = x_base + (b - t1) / 2
-        y_alma = t3 + t2
-        ax.add_patch(patches.Rectangle((x_alma, y_alma), t1, h1, color='red'))
-
-        # Aba superior
-        ax.add_patch(patches.Rectangle((x_base, y_alma + h1), b, t2, color='dodgerblue'))
-
-    # Itens da legenda
-    legend_items = [
-        patches.Patch(color='gray', label='Revestimento'),
-        patches.Patch(color='red', label='Alma'),
-        patches.Patch(color='dodgerblue', label='Aba')
-    ]
-
-    # Centroide e eixo neutro
-    if ponto_centroide is not None:
-        x_c, y_c = ponto_centroide
-        ax.plot(x_c, y_c, 'ko')  # ponto preto
-        legend_items.append(Line2D([0], [0], marker='o', color='black', label='Centroide ponderado', linestyle=''))
-
-        if alpha is not None:
-            # Converte o ângulo de graus para radianos
-            theta = np.radians(alpha)
-
-            # Define uma linha grande o suficiente para cruzar a imagem
-            comprimento = max(largura_total, altura_total) * 2
-
-            # Direção da linha
-            dx = np.cos(theta)
-            dy = np.sin(theta)
-
-            # Ponto inicial e final da linha
-            x_start = x_c - comprimento * dx
-            x_end   = x_c + comprimento * dx
-            y_start = y_c - comprimento * dy
-            y_end   = y_c + comprimento * dy
-
-            # Desenha a linha pontilhada
-            ax.plot([x_start, x_end], [y_start, y_end], linestyle='--', color='black', linewidth=1)
-            legend_items.append(Line2D([0], [0], linestyle='--', color='black', label='Eixo neutro'))
-
-    # Legenda
-    ax.legend(handles=legend_items, loc='center left', bbox_to_anchor=(1.01, 0.5))
-
-    # Ajustes visuais
-    ax.set_aspect('equal')
-    ax.set_xlim(-0.05 * largura_total, 1.05 * largura_total)
-    ax.set_ylim(-0.05 * altura_total, 1.05 * altura_total)
-    ax.axis('off')
-    plt.tight_layout()
-    plt.subplots_adjust(right=0.85)
-    plt.show()
 
 def sigma_x(N_cel, h1, t1, t2, t3, e, b,
                   E1, E2, E3, E0,
@@ -507,4 +367,78 @@ def sigma_x(N_cel, h1, t1, t2, t3, e, b,
     plt.ylim([-0.01, h+0.01])
     plt.tight_layout()
     plt.legend()
+
+def ycp(CL):
+    # Obtido a partir de um ajuste de curva
+    if CL>=0:
+        return 7.3164*np.exp(-7.2129*CL) + 0.0646
+    else:
+        return 0.0190/(CL + 0.0578) - CL*0.1085 -0.1819
     
+
+def MatrizA_torsao(A, C, alpha, beta, N = 2):
+    '''
+    Função destinada a construir a matriz A para solução do problema de torção. 
+    A: Área media Ami -> pelas hipóteses cte 
+    C: constante Ci
+    alpha: integral de área i -> valor cte por célula
+    beta: integral da aba -> valor cte por aba 
+    N: número de células
+    '''
+    MA = np.zeros((N, N))
+    AMI = A*np.ones(N)
+    MA[0, :] = AMI 
+
+    if (N == 1):
+        MA = alpha 
+
+    elif (N==2):
+        MA[1, 0] = C*(alpha + beta)
+        MA[1, 1] = -C*(alpha + beta) 
+
+    elif (N==3):
+        MA[1, 0] = C*(alpha + beta)
+        MA[1, 1] = -C*(alpha + beta)
+        MA[1, 2] = C*beta 
+        MA[2, 0] = -C*beta 
+        MA[2, 1] = C*(alpha + beta)
+        MA[2, 2] = -C*(alpha + beta)
+    else: 
+        # MA[1, 0] = C*(alpha + beta)
+        # MA[1, 1] = -C*(alpha + beta)
+        # MA[1, 2] = C*beta 
+        # MA[2, 0] = -C*beta 
+        # MA[2, 1] = C*(alpha + beta)
+        # MA[2, 2] = -C*(alpha + beta)
+
+        # for i in range(3, N-1):
+        print('A ser definido ainda')
+            
+    # for i in range(1, N):
+    return MA
+
+def momento_torsor_dist(Fz, Fy, zcp, ycp):
+    return Fz*ycp - Fy*zcp 
+
+def torque_torsor(x, mx):
+    T = np.zeros(len(x))
+    for i in range(len(x)-1, 0, -1):
+        T[i-1] = T[i] + mx[i]*(x[i] - x[i-1])
+    return T
+
+def problema_torcao(x, MA, Tx, alphai, betai):
+    N_cel = np.int64(MA.size/2)
+    q = np.zeros((N_cel, len(x)))
+    d_dtheta = np.zeros(len(x))
+    theta = np.zeros(len(x))
+
+    for i in range(len(x)):
+        T = np.zeros(N_cel).T 
+        T[0] = Tx[i]
+        q[:, i] = np.matmul(np.linalg.inv(MA), T) 
+        d_dtheta[i] = q[0, i]*alphai - q[1, i]*betai
+
+    for i in range(1, len(x)):
+        theta[i] = theta[i-1] + d_dtheta[i]*(x[i] - x[i-1])
+
+    return theta, q  
