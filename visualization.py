@@ -247,4 +247,37 @@ def plot_sigma(sigma, l, htot, f = 1e6,
     plt.tight_layout()
     plt.legend()
 
+def plot_qfield(q, l, htot,
+               i_ref_plot = 0,
+               f = 1e6, 
+               centroide = [], 
+               title = ""):
+    # Determinando a malha
+    resolution = q.shape
+    y = np.linspace(0, l, resolution[0])
+    z = np.linspace(0, htot, resolution[0])
+    Y, Z = np.meshgrid(y, z)
+
+    # --- Plot ---
+    plt.figure(figsize=(10, 4))
+    extent = [0, l, 0, htot]
+    im = plt.imshow(q/f, origin='lower', extent=extent,
+                    aspect='auto', cmap='plasma')
+    
+
+    # Eixo neutro 
+    x_c, y_c = centroide
+    plt.text(x_c + 0.2*x_c, y_c, r"$q_1$ = " + str(round(q[0, 0], 3)))
+    plt.text(x_c + 0.2*x_c, y_c - 0.2*y_c, r"$q_2$ = " + str(round(q[1, 0], 3)))
+    plt.plot(x_c, y_c, 'ko', label = 'Centroide ponderado') 
+    # plt.plot(Y[linha, coluna], Z[linha, coluna], 'ro', label = 'Máxima tensão = '+ str(round(sigma[linha, coluna, i_ref_plot]/f, 2)) + 'MPa')  
+    plt.colorbar(im, label=r'$q(y,z)$ [kN/m]')
+    plt.xlabel('y [mm]')
+    plt.ylabel('z [mm]')
+    plt.title(title)
+    plt.xlim([-0.01, l+0.01])
+    plt.ylim([-0.01, htot+0.01])
+    plt.tight_layout()
+    plt.legend()
+
 

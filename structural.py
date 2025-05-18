@@ -470,10 +470,10 @@ class torsion(aero_struct):
         self.Tx_NLAA = self.x_neg_integral(V = self.mx_NLAA)
 
         # Angle and flux 
-        self.theta_PHAA, self.q_PHAA = self.flux_angle_calc(self.Tx_PHAA)
-        self.theta_PLAA, self.q_PLAA = self.flux_angle_calc(self.Tx_PLAA)
-        self.theta_NLAA, self.q_NLAA = self.flux_angle_calc(self.Tx_NLAA)
-        self.theta_NHAA, self.q_NHAA = self.flux_angle_calc(self.Tx_NHAA)
+        self.theta_PHAA, self.q_PHAA, self.q_field_PHAA = self.flux_angle_calc(self.Tx_PHAA)
+        self.theta_PLAA, self.q_PLAA, self.q_field_PLAA = self.flux_angle_calc(self.Tx_PLAA)
+        self.theta_NLAA, self.q_NLAA, self.q_field_NLAA = self.flux_angle_calc(self.Tx_NLAA)
+        self.theta_NHAA, self.q_NHAA, self.q_field_NHAA = self.flux_angle_calc(self.Tx_NHAA)
 
     def propagate_torsion(self, **kwargs):
         # Torsion distributed moment
@@ -522,4 +522,55 @@ class torsion(aero_struct):
         for i in range(1, self.N_points):
             theta[i] = theta[i-1] + d_dtheta[i-1]*(self.x_coord[i] - self.x_coord[i-1])
 
-        return theta, q  
+        q_field = self.q_field(q)
+        return theta, q, q_field 
+    
+    def q_field(self, q):
+        # Calculating the mesh
+        y = np.linspace(0, self.l, self.N_points)
+        z = np.linspace(0, self.htot, self.N_points)
+        Y, Z = np.meshgrid(y, z)
+
+        # Region of existence of material 3
+        i_rev_inf = (Z>=0) & (Z<=self.t3)
+        i_rev_sup = (Z>= self.t3+2*self.t2+self.h1) & (Z<=2*self.t3 + 2*self.t2 + self.h1)
+
+        # Campo do módulo E
+        q_field = np.nan*np.zeros((self.N_points, self.N_points))
+
+        # Campo E no revestimento
+        q_field[i_rev_inf] = q[0, 0]
+        q_field[i_rev_sup] = q[0, 0]
+
+        # Determinando a existencia do material na alma e na aba
+        for k in range(self.N_points):
+            for j in range(self.N_points):
+                for i in range(self.N_cel+1):
+                    # Almas 
+                    if ((Y[k,j]>= ((i+1)*self.e + i*self.b + (self.b-self.t1)/2)) & (Y[k,j]<= (((i+1)*self.e + i*self.b + (self.b+self.t1)/2))))&((Z[k,j]>=(self.t3+self.t2)) & (Z[k,j]<=(self.t3+self.t2+self.h1))):
+                        if i == 0:
+                            if self.N_cel == 1:
+                                q_field = q[0, 0]
+                            else:
+                                q_field[k,j] = q[i,0]
+                        elif i == self.N_cel:
+                            if self.N_cel == 1:
+                                q_field = q[0, 0]
+                            else:
+                                q_field[k,j] = q[i-1,0]
+                        else:
+                            if self.N_cel == 1:
+                                q_field = q[0, 0]
+                            else:
+                                q_field[k,j] = q[i, 0] - q[i-1,0]
+                             
+                    
+                    # Aba superior 
+                    if ((Y[k,j]>=((i+1)*self.e + i*self.b)) & (Y[k,j]<=(i+1)*self.e + (i+1)*self.b)) & ((Z[k,j]>=(self.htot-self.t3-self.t2)) & (Z[k,j]<= self.htot-self.t3)):
+                        q_field[k,j] = q[0,0]
+                    
+                    # Aba inferior 
+                    if ((Y[k,j]>=((i+1)*self.e + i*self.b)) & (Y[k,j]<=(i+1)*self.e + (i+1)*self.b)) & ((Z[k,j]>=(self.t3)) & (Z[k,j]<= self.t3+self.t2)):
+                        q_field[k,j] = q[0,0]
+                        
+        return q_field
