@@ -50,3 +50,7 @@ Este projeto realiza a simulação estrutural de uma **caixa de asa (wingbox)** 
 1. Certifique-se de ter o Python 3 instalado com as bibliotecas:
    ```bash
    pip install numpy matplotlib
+
+2. Utilize o `sim_setup.py` para colocar os dados de entrada da sua aeronave, com isso: 
+   ```bash
+   python sim_setup.py 
