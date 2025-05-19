@@ -247,7 +247,7 @@ def plot_sigma(sigma, l, htot, f = 1e6,
     plt.tight_layout()
     plt.legend()
 
-def plot_qfield(q, l, htot,
+def plot_qfield(q, q_val, l, htot,
                i_ref_plot = 0,
                f = 1e6, 
                centroide = [], 
@@ -267,8 +267,9 @@ def plot_qfield(q, l, htot,
 
     # Eixo neutro 
     x_c, y_c = centroide
-    plt.text(x_c + 0.2*x_c, y_c, r"$q_1$ = " + str(round(q[0, 0], 3)))
-    plt.text(x_c + 0.2*x_c, y_c - 0.2*y_c, r"$q_2$ = " + str(round(q[1, 0], 3)))
+    for i in range(len(q_val)):
+        plt.plot([], [], 'ro', label = r"$q_"+ str(i+1)+ "$= " + str(round(q_val[i], 3)))
+    
     plt.plot(x_c, y_c, 'ko', label = 'Centroide ponderado') 
     # plt.plot(Y[linha, coluna], Z[linha, coluna], 'ro', label = 'Máxima tensão = '+ str(round(sigma[linha, coluna, i_ref_plot]/f, 2)) + 'MPa')  
     plt.colorbar(im, label=r'$q(y,z)$ [kN/m]')

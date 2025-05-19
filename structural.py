@@ -1,6 +1,4 @@
-from func_solver import * 
-from fun_plot import * 
-
+import numpy as np
 class structure():
     def __init__(self, **kwargs):
         self.init_aircraft(**kwargs)
@@ -539,8 +537,8 @@ class torsion(aero_struct):
         q_field = np.nan*np.zeros((self.N_points, self.N_points))
 
         # Campo E no revestimento
-        q_field[i_rev_inf] = q[0, 0]
-        q_field[i_rev_sup] = q[0, 0]
+        q_field[i_rev_inf] = 0
+        q_field[i_rev_sup] = 0
 
         # Determinando a existencia do material na alma e na aba
         for k in range(self.N_points):
@@ -567,10 +565,33 @@ class torsion(aero_struct):
                     
                     # Aba superior 
                     if ((Y[k,j]>=((i+1)*self.e + i*self.b)) & (Y[k,j]<=(i+1)*self.e + (i+1)*self.b)) & ((Z[k,j]>=(self.htot-self.t3-self.t2)) & (Z[k,j]<= self.htot-self.t3)):
-                        q_field[k,j] = q[0,0]
-                    
+                        if np.isnan(q_field[k,j]):
+                            q_field[k,j] = 0
+                        else:
+                            pass
+
                     # Aba inferior 
                     if ((Y[k,j]>=((i+1)*self.e + i*self.b)) & (Y[k,j]<=(i+1)*self.e + (i+1)*self.b)) & ((Z[k,j]>=(self.t3)) & (Z[k,j]<= self.t3+self.t2)):
-                        q_field[k,j] = q[0,0]
+                        if np.isnan(q_field[k,j]):
+                            q_field[k,j] = 0
+                        else:
+                            pass
+
+                    if i < self.N_cel:
+                        # Aba superior esquerda
+                        if ((Y[k,j]>=((i+1)*self.e + (2*(i+1)-1)*self.b/2)) & (Y[k,j]<= (i+1)*self.e + (i+1)*self.b)) & ((Z[k,j]>=(self.htot-self.t3-self.t2)) & (Z[k,j]<= self.htot-self.t3)):
+                            q_field[k,j] = q[i,0]
+
+                        # Aba superior direita
+                        if ((Y[k,j]>=((i+2)*self.e + (i+1)*self.b)) & (Y[k,j]<= ((i+2)*self.e + (2*(i+2)-1)*self.b/2))) & ((Z[k,j]>=(self.htot-self.t3-self.t2)) & (Z[k,j]<= self.htot-self.t3)):
+                            q_field[k,j] = q[i,0]
+                            
+                        # Aba inferior esquerda
+                        if ((Y[k,j]>=((i+1)*self.e + (2*(i+1)-1)*self.b/2)) & (Y[k,j]<= (i+1)*self.e + (i+1)*self.b)) & ((Z[k,j]>=(self.t3)) & (Z[k,j]<= self.t3+self.t2)):
+                            q_field[k,j] = q[i,0]
                         
+                        # Aba inferior direita
+                        if ((Y[k,j]>=((i+2)*self.e + (i+1)*self.b)) & (Y[k,j]<= ((i+2)*self.e + (2*(i+2)-1)*self.b/2))) & ((Z[k,j]>=(self.t3)) & (Z[k,j]<= self.t3+self.t2)):
+                            q_field[k,j] = q[i,0]
+
         return q_field

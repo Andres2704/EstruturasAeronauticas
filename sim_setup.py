@@ -135,7 +135,8 @@ plot_sigma(estrutura.sigma_NLAA, l = 0.3, htot = estrutura.htot,
            alpha = estrutura.alpha_axis_NLAA[0], 
            title = "Campo de Tensões σₓ(y,z) - NLAA" )
 
-plot_qfield(torcao.q_field_PHAA, l = 0.3, htot = estrutura.htot, 
+plot_qfield(torcao.q_field_PHAA, q_val = torcao.q_PHAA[:, 0], 
+           l = 0.3, htot = estrutura.htot, 
            i_ref_plot= 0,
            centroide=[estrutura.ys, estrutura.zs], 
            title = "Campo de fluxo de cisalhamento q(y,z) - PHAA" )
