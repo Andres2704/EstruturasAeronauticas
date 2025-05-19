@@ -59,7 +59,7 @@ torcao = st.torsion(**dados)
 # Propagando a solucao nos pontos críticos do diagram V-n
 estrutura.propagate_aero_critic(**dados_crit)
 torcao.propagate_torsion_crit(
-    type = 'uniform',           # Fit = curva Ycp vs Cl | Uniform = momento uniforme
+    type = 'fit',           # Fit = curva Ycp vs Cl | Uniform = momento uniforme
     c = 1.6,                    # Comprimento de referencia
     **dados_crit)
 
@@ -136,23 +136,22 @@ plot_sigma(estrutura.sigma_NLAA, l = 0.3, htot = estrutura.htot,
            title = "Campo de Tensões σₓ(y,z) - NLAA" )
 
 plot_qfield(torcao.q_field_PHAA, q_val = torcao.q_PHAA[:, 0], 
-           l = 0.3, htot = estrutura.htot, 
-           i_ref_plot= 0,
+           l = 0.3, htot = estrutura.htot, i_ref_plot= 0,
            centroide=[estrutura.ys, estrutura.zs], 
            title = "Campo de fluxo de cisalhamento q(y,z) - PHAA" )
 
-plot_qfield(torcao.q_field_PLAA, l = 0.3, htot = estrutura.htot, 
-           i_ref_plot= 0,
+plot_qfield(torcao.q_field_PLAA, q_val = torcao.q_PLAA[:, 0], 
+            l = 0.3, htot = estrutura.htot, i_ref_plot= 0,
            centroide=[estrutura.ys, estrutura.zs], 
            title = "Campo de fluxo de cisalhamento q(y,z) - PLAA" )
 
-plot_qfield(torcao.q_field_NHAA, l = 0.3, htot = estrutura.htot, 
-           i_ref_plot= 0,
+plot_qfield(torcao.q_field_NHAA, q_val = torcao.q_NHAA[:, 0], 
+            l = 0.3, htot = estrutura.htot, i_ref_plot= 0,
            centroide=[estrutura.ys, estrutura.zs], 
            title = "Campo de fluxo de cisalhamento q(y,z) - NHAA" )
 
-plot_qfield(torcao.q_field_NLAA, l = 0.3, htot = estrutura.htot, 
-           i_ref_plot= 0,
+plot_qfield(torcao.q_field_NLAA, q_val = torcao.q_NLAA[:, 0], 
+            l = 0.3, htot = estrutura.htot, i_ref_plot= 0,
            centroide=[estrutura.ys, estrutura.zs], 
            title = "Campo de fluxo de cisalhamento q(y,z) - NLAA" )
 

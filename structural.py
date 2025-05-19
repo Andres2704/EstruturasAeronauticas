@@ -416,10 +416,7 @@ class torsion(aero_struct):
         return M 
 
     def get_ycp(self, CL):
-        if CL>=0:
-            return 7.31644534*np.exp(-7.21294987*CL) + 0.06457523
-        else:
-            return 0.01896724/(CL + 0.05777520) - CL*0.10845673 - 0.18187554
+        return 0.069528126091/CL + 0.222745529018 # Curve fitting from report 
     
     def get_zcp(self, c):
         return 0.0253*c
@@ -434,7 +431,7 @@ class torsion(aero_struct):
             CL = kwargs.get('CL')
             zcp = self.get_zcp(c)
             ycp = self.get_ycp(CL)
-            return Fz*ycp - Fy*zcp 
+            return -Fz*ycp + Fy*zcp 
         else:
             V = kwargs.get('V')
             Cm = kwargs.get('Cm')
